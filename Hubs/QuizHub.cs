@@ -24,17 +24,43 @@ namespace HellOfQuiz.Hubs
             }
         }
 
-        // Oyuncu Odaya Katılır
         public async Task JoinRoom(string pin, string playerName)
         {
             var room = _roomService.GetRoom(pin);
-            if (room == null || room.State != RoomState.WaitingForPlayers)
+            if (room == null)
             {
-                await Clients.Caller.SendAsync("Error", "Oda bulunamadı veya oyun çoktan başladı!");
+                await Clients.Caller.SendAsync("Error", "Oda bulunamadı!");
                 return;
             }
 
-            var player = new Player
+            var player = room.Players.FirstOrDefault(p => p.Name == playerName);
+
+            if (player != null)
+            {
+                // Oyuncu tekrar bağlandı
+                player.ConnectionId = Context.ConnectionId;
+                await Groups.AddToGroupAsync(Context.ConnectionId, pin);
+                await Clients.Caller.SendAsync("JoinedRoom", pin, playerName);
+                
+                if (room.State == RoomState.ShowingQuestion)
+                {
+                    await Clients.Caller.SendAsync("ShowQuestion", room.TimeLimitSeconds);
+                }
+                else if (room.State == RoomState.ShowingAnswer)
+                {
+                    int rank = room.Players.OrderByDescending(p => p.Score).ToList().IndexOf(player) + 1;
+                    await Clients.Caller.SendAsync("ShowPlayerResult", player.HasAnsweredCurrentQuestion, player.LastAnswerIsCorrect, player.Score, rank);
+                }
+                return;
+            }
+
+            if (room.State != RoomState.WaitingForPlayers)
+            {
+                await Clients.Caller.SendAsync("Error", "Oyun çoktan başladı!");
+                return;
+            }
+
+            player = new Player
             {
                 ConnectionId = Context.ConnectionId,
                 Name = playerName
@@ -150,12 +176,12 @@ namespace HellOfQuiz.Hubs
             }
             else
             {
-                // Çıkan oyuncuysa listeden sil
+                // Çıkan oyuncuysa ve oyun henüz başlamadıysa listeden sil
                 var playerRoom = _roomService.GetRoomByPlayerId(Context.ConnectionId);
                 if (playerRoom != null)
                 {
                     var player = playerRoom.Players.FirstOrDefault(p => p.ConnectionId == Context.ConnectionId);
-                    if (player != null)
+                    if (player != null && playerRoom.State == RoomState.WaitingForPlayers)
                     {
                         playerRoom.Players.Remove(player);
                         Clients.Client(playerRoom.HostConnectionId).SendAsync("PlayerLeft", player.Name);
