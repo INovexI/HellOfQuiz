@@ -80,11 +80,25 @@
             showStatus("Cevabın Alındı!\nSürenin bitmesini bekle...");
         });
 
-        connection.on("ShowAnswerResult", function (correctAnswer) {
+        connection.on("ShowPlayerResult", function (hasAnswered, isCorrect, score, rank) {
             document.getElementById("buttons-container").style.display = "none";
             document.getElementById("status-container").style.display = "flex";
-            // Normalde oyuncuya doğru bilip bilmediği söylenebilir ama basitleştirdik.
-            showStatus("Süre bitti!\nTahtaya Bak");
+            
+            let resultHtml = "";
+            if (!hasAnswered) {
+                resultHtml = "<h1 class='text-danger'>Süre Bitti!</h1><h3 class='text-muted mt-3'>Cevap Vermedin ⏳</h3>";
+            } else if (isCorrect) {
+                resultHtml = "<h1 class='text-success'>Doğru Cevap! 🎉</h1><h3 class='text-white mt-3'>Harikasın!</h3>";
+            } else {
+                resultHtml = "<h1 class='text-danger'>Yanlış Cevap 😢</h1><h3 class='text-muted mt-3'>Bir dahaki sefere...</h3>";
+            }
+            
+            resultHtml += `<div class='mt-4 p-3 rounded' style='background: rgba(255,255,255,0.1); display: inline-block;'>
+                            <h4 class='text-white'>Puanın: <strong>${score}</strong></h4>
+                            <h4 class='text-warning mb-0'>Sıralama: <strong>${rank}.</strong></h4>
+                           </div>`;
+                           
+            document.getElementById("status-text").innerHTML = resultHtml;
         });
 
         connection.on("RoomClosed", function () {

@@ -25,24 +25,11 @@
         </a>
 
         <div class="navbar-links">
-            <a href="/" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
-                🏠 Ana Sayfa
-            </a>
-
-
             @if (Context.Session.GetString("IsAdmin") == "True")
             {
                 <a href="/Admin" class="nav-link admin-link">
                     ⚙️ Admin Panel
                 </a>
-            }
-
-            @if (Context.Session.GetInt32("UserId") != null)
-            {
-                <div class="nav-user">
-                    <span class="nav-username">👤 @Context.Session.GetString("Username")</span>
-                    <a href="/Account/Logout" class="btn-nav btn-logout">Çıkış</a>
-                </div>
             }
         </div>
     </nav>

@@ -74,6 +74,7 @@ namespace HellOfQuiz.Hubs
             foreach (var player in room.Players)
             {
                 player.HasAnsweredCurrentQuestion = false;
+                player.LastAnswerIsCorrect = false;
             }
 
             // Oyunculara sadece seçenekleri yolla
@@ -95,6 +96,8 @@ namespace HellOfQuiz.Hubs
             var currentQuestion = room.Questions[room.CurrentQuestionIndex];
             
             bool isCorrect = currentQuestion.CorrectAnswer.ToUpper() == answer.ToUpper();
+            player.LastAnswerIsCorrect = isCorrect;
+            
             if (isCorrect)
             {
                 // Puan hesaplama: Kalan süreye göre bonus
@@ -123,10 +126,17 @@ namespace HellOfQuiz.Hubs
             room.State = RoomState.ShowingAnswer;
             var currentQuestion = room.Questions[room.CurrentQuestionIndex];
 
-            var top5 = room.Players.OrderByDescending(p => p.Score).Take(5).ToList();
+            var orderedPlayers = room.Players.OrderByDescending(p => p.Score).ToList();
+            var top5 = orderedPlayers.Take(5).ToList();
             
-            await Clients.Group(pin).SendAsync("ShowAnswerResult", currentQuestion.CorrectAnswer);
             await Clients.Client(room.HostConnectionId).SendAsync("ShowHostAnswerResult", currentQuestion.CorrectAnswer, top5);
+
+            for (int i = 0; i < orderedPlayers.Count; i++)
+            {
+                var player = orderedPlayers[i];
+                int rank = i + 1;
+                await Clients.Client(player.ConnectionId).SendAsync("ShowPlayerResult", player.HasAnsweredCurrentQuestion, player.LastAnswerIsCorrect, player.Score, rank);
+            }
         }
 
         public override Task OnDisconnectedAsync(Exception? exception)
