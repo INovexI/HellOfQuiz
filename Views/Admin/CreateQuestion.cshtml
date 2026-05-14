@@ -1,0 +1,81 @@
+@model HellOfQuiz.Models.Question
+@{ ViewData["Title"] = "Yeni Soru Ekle"; }
+
+<div class="admin-container">
+    <div style="margin-bottom:1.5rem">
+        <a href="/Admin/Questions" style="color:var(--text-muted);text-decoration:none;font-size:0.9rem">← Sorulara Dön</a>
+    </div>
+
+    <div class="form-container">
+        <h1 class="form-title">➕ Yeni Soru Ekle</h1>
+
+        <form asp-action="CreateQuestion" asp-controller="Admin" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" style="color:var(--error);background:rgba(231,76,60,0.1);padding:0.75rem;border-radius:8px;margin-bottom:1rem;font-size:0.9rem"></div>
+
+            <div class="form-group">
+                <label class="form-label">Soru Metni</label>
+                <textarea asp-for="Text" class="form-control" rows="3" placeholder="Soruyu buraya yaz..."></textarea>
+                <span asp-validation-for="Text" class="text-danger"></span>
+            </div>
+
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label class="form-label">A Şıkkı</label>
+                    <input asp-for="OptionA" class="form-control" placeholder="A şıkkı" />
+                    <span asp-validation-for="OptionA" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">B Şıkkı</label>
+                    <input asp-for="OptionB" class="form-control" placeholder="B şıkkı" />
+                    <span asp-validation-for="OptionB" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">C Şıkkı</label>
+                    <input asp-for="OptionC" class="form-control" placeholder="C şıkkı" />
+                    <span asp-validation-for="OptionC" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">D Şıkkı</label>
+                    <input asp-for="OptionD" class="form-control" placeholder="D şıkkı" />
+                    <span asp-validation-for="OptionD" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label class="form-label">Doğru Cevap</label>
+                    <select asp-for="CorrectAnswer" class="form-control">
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Zorluk</label>
+                    <select asp-for="Difficulty" class="form-control">
+                        <option value="1">🟢 Kolay</option>
+                        <option value="2">🟡 Orta</option>
+                        <option value="3">🔴 Zor</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Kategori</label>
+                <select asp-for="CategoryId" asp-items="@(new SelectList(ViewBag.Categories, "Id", "Name"))" class="form-control">
+                    <option value="">-- Kategori Seç --</option>
+                </select>
+                <span asp-validation-for="CategoryId" class="text-danger"></span>
+            </div>
+
+            <div style="display:flex;gap:1rem;margin-top:0.5rem">
+                <button type="submit" class="btn btn-primary">✅ Soruyu Kaydet</button>
+                <a href="/Admin/Questions" class="btn btn-secondary">İptal</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

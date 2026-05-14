@@ -1,0 +1,26 @@
+@{ ViewData["Title"] = "Admin Paneli"; }
+
+<div class="admin-container">
+    <h1 class="page-title">⚙️ Admin Paneli</h1>
+    <p class="page-sub">HellOfQuiz yönetim merkezi</p>
+
+    <div class="admin-grid">
+        <div class="admin-stat"><div class="admin-stat-number">@ViewBag.TotalUsers</div><div class="admin-stat-label">👤 Kullanıcı</div></div>
+        <div class="admin-stat"><div class="admin-stat-number">@ViewBag.TotalQuestions</div><div class="admin-stat-label">❓ Soru</div></div>
+        <div class="admin-stat"><div class="admin-stat-number">@ViewBag.TotalCategories</div><div class="admin-stat-label">📂 Kategori</div></div>
+        <div class="admin-stat"><div class="admin-stat-number">@ViewBag.TotalGames</div><div class="admin-stat-label">🎮 Oynanan</div></div>
+    </div>
+
+    <div class="admin-nav">
+        <a href="/Admin/Questions" class="admin-nav-item">❓ Sorular</a>
+        <a href="/Admin/Categories" class="admin-nav-item">📂 Kategoriler</a>
+        <a href="/Admin/Users" class="admin-nav-item">👥 Kullanıcılar</a>
+        <a href="/Admin/CreateQuestion" class="admin-nav-item" style="background:var(--primary);color:#fff;border-color:var(--primary)">➕ Yeni Soru</a>
+    </div>
+
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;text-align:center">
+        <div style="font-size:3rem;margin-bottom:1rem">🛡️</div>
+        <h3>Admin Paneline Hoş Geldin!</h3>
+        <p style="color:var(--text-muted);margin-top:0.5rem">Yukarıdaki menüden işlem seçebilirsin.</p>
+    </div>
+</div>

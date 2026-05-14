@@ -1,0 +1,113 @@
+@{
+    ViewData["Title"] = "Oyun Kolu";
+    var pin = ViewBag.Pin as string;
+    var playerName = ViewBag.PlayerName as string;
+}
+
+<style>
+    .answer-btn {
+        height: 40vh;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 5rem;
+        cursor: pointer;
+        transition: transform 0.1s;
+    }
+    .answer-btn:active {
+        transform: scale(0.95);
+    }
+    .status-screen {
+        height: 80vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+</style>
+
+<div class="container-fluid mt-2">
+    <!-- Bekleme ve Sonuç Ekranı -->
+    <div id="status-container" class="status-screen">
+        <h2 id="status-text" class="text-white fw-bold">Bağlanıyor...</h2>
+        <h4 class="text-muted mt-3">@playerName</h4>
+    </div>
+
+    <!-- Cevap Butonları -->
+    <div id="buttons-container" class="row g-2" style="display:none;">
+        <div class="col-6">
+            <div class="answer-btn text-white shadow" style="background-color: #E21B3C;" onclick="submitAnswer('A')">🔺</div>
+        </div>
+        <div class="col-6">
+            <div class="answer-btn text-white shadow" style="background-color: #1368CE;" onclick="submitAnswer('B')">♦️</div>
+        </div>
+        <div class="col-6">
+            <div class="answer-btn text-white shadow" style="background-color: #D89E00;" onclick="submitAnswer('C')">⏺️</div>
+        </div>
+        <div class="col-6">
+            <div class="answer-btn text-white shadow" style="background-color: #26890C;" onclick="submitAnswer('D')">🟩</div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const pin = "@pin";
+        const playerName = "@playerName";
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/quizHub")
+            .build();
+
+        connection.on("JoinedRoom", function (joinedPin, name) {
+            showStatus("Oyuna Katıldın!\nEkrana Bak");
+        });
+
+        connection.on("Error", function (message) {
+            alert(message);
+            window.location.href = "/";
+        });
+
+        connection.on("ShowQuestion", function (timeLimit) {
+            document.getElementById("status-container").style.display = "none";
+            document.getElementById("buttons-container").style.display = "flex";
+        });
+
+        connection.on("AnswerReceived", function (isCorrect) {
+            document.getElementById("buttons-container").style.display = "none";
+            document.getElementById("status-container").style.display = "flex";
+            showStatus("Cevabın Alındı!\nSürenin bitmesini bekle...");
+        });
+
+        connection.on("ShowAnswerResult", function (correctAnswer) {
+            document.getElementById("buttons-container").style.display = "none";
+            document.getElementById("status-container").style.display = "flex";
+            // Normalde oyuncuya doğru bilip bilmediği söylenebilir ama basitleştirdik.
+            showStatus("Süre bitti!\nTahtaya Bak");
+        });
+
+        connection.on("RoomClosed", function () {
+            alert("Host odadan ayrıldı.");
+            window.location.href = "/";
+        });
+
+        connection.on("GameFinished", function () {
+            showStatus("Oyun Bitti!\nPodyuma Bak");
+        });
+
+        connection.start().then(function () {
+            connection.invoke("JoinRoom", pin, playerName).catch(err => console.error(err));
+        }).catch(function (err) {
+            return console.error(err.toString());
+        });
+
+        function submitAnswer(answer) {
+            connection.invoke("SubmitAnswer", pin, answer).catch(err => console.error(err));
+        }
+
+        function showStatus(text) {
+            document.getElementById("status-text").innerText = text;
+        }
+    </script>
+}

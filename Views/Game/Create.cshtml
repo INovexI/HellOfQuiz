@@ -1,0 +1,173 @@
+@model dynamic
+@{
+    ViewData["Title"] = "Oda Kur";
+    var categories = ViewBag.Categories as List<HellOfQuiz.Models.Category>;
+}
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Yeni Oyun Odası Kur</h2>
+
+    <div class="row">
+        <!-- Hazır Sorular -->
+        <div class="col-md-6 mb-4">
+            <div class="card glass-card h-100 p-4">
+                <h3 class="text-center text-primary mb-3">Hazır Sorularla Oyna</h3>
+                <p class="text-muted text-center">Mevcut kategorilerden birini seç veya karışık sorularla başla.</p>
+                <form id="form-premade">
+                    <div class="mb-3">
+                        <label class="form-label">Kategori Seç</label>
+                        <select id="select-category" class="form-select bg-dark text-light">
+                            <option value="-1">🌍 Genel (Karışık Sorular)</option>
+                            @foreach (var cat in categories)
+                            {
+                                <option value="@cat.Id">@cat.Icon @cat.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <button type="button" onclick="startPremadeRoom()" class="btn btn-primary w-100">Odayı Kur</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Kendi Sorularını Oluştur -->
+        <div class="col-md-6 mb-4">
+            <div class="card glass-card h-100 p-4">
+                <h3 class="text-center text-warning mb-3">Kendi Sorularını Oluştur</h3>
+                <p class="text-muted text-center">Gartic.io tarzı özel sorularını ekle ve arkadaşlarına sor.</p>
+                <button type="button" class="btn btn-warning w-100" data-bs-toggle="modal" data-bs-target="#customQuestionsModal">Özel Soru Eklemeye Başla</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Questions Modal -->
+<div class="modal fade" id="customQuestionsModal" tabindex="-1" data-bs-theme="dark">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content bg-dark text-light">
+      <div class="modal-header">
+        <h5 class="modal-title text-warning">Özel Sorular</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        
+        <div id="questions-list" class="mb-4">
+            <!-- Eklenen sorular burada listelenecek -->
+        </div>
+
+        <div class="card bg-secondary p-3">
+            <h6 class="text-white">Yeni Soru Ekle</h6>
+            <input type="text" id="cq-text" class="form-control mb-2" placeholder="Soru metni..." />
+            <div class="row">
+                <div class="col-6 mb-2"><input type="text" id="cq-a" class="form-control" placeholder="A Şıkkı" /></div>
+                <div class="col-6 mb-2"><input type="text" id="cq-b" class="form-control" placeholder="B Şıkkı" /></div>
+                <div class="col-6 mb-2"><input type="text" id="cq-c" class="form-control" placeholder="C Şıkkı" /></div>
+                <div class="col-6 mb-2"><input type="text" id="cq-d" class="form-control" placeholder="D Şıkkı" /></div>
+            </div>
+            <div class="mb-2">
+                <label>Doğru Cevap:</label>
+                <select id="cq-correct" class="form-select w-50">
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="C">C</option>
+                    <option value="D">D</option>
+                </select>
+            </div>
+            <button type="button" class="btn btn-success" onclick="addCustomQuestion()">+ Listeye Ekle</button>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <span class="text-muted me-auto" id="cq-count">Eklenen Soru: 0</span>
+        <button type="button" class="btn btn-primary" onclick="startCustomRoom()">Odayı Kur</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+@section Scripts {
+    <!-- Bootstrap Modal JS desteği layout'ta var varsayıyoruz, yoksa eklemeliyiz. Layout'ta bootstrap yoksa jquery ile de yapılabilir ama Bootstrap kullanılıyor gibi görünüyor. -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let customQuestions = [];
+
+        function startPremadeRoom() {
+            const catId = document.getElementById('select-category').value;
+            createRoomRequest(catId, null);
+        }
+
+        function addCustomQuestion() {
+            const q = {
+                Text: document.getElementById('cq-text').value,
+                OptionA: document.getElementById('cq-a').value,
+                OptionB: document.getElementById('cq-b').value,
+                OptionC: document.getElementById('cq-c').value,
+                OptionD: document.getElementById('cq-d').value,
+                CorrectAnswer: document.getElementById('cq-correct').value,
+                Difficulty: 1,
+                CategoryId: 0 // Özel kategori kodu
+            };
+
+            if(!q.Text || !q.OptionA || !q.OptionB || !q.OptionC || !q.OptionD){
+                alert("Lütfen tüm alanları doldurun!");
+                return;
+            }
+
+            customQuestions.push(q);
+            updateQuestionsList();
+            
+            // Temizle
+            document.getElementById('cq-text').value = '';
+            document.getElementById('cq-a').value = '';
+            document.getElementById('cq-b').value = '';
+            document.getElementById('cq-c').value = '';
+            document.getElementById('cq-d').value = '';
+        }
+
+        function updateQuestionsList() {
+            const list = document.getElementById('questions-list');
+            list.innerHTML = '';
+            customQuestions.forEach((q, index) => {
+                list.innerHTML += `<div class="badge bg-primary me-2 mb-2 p-2">
+                    ${index+1}. ${q.Text.substring(0, 20)}... 
+                    <span style="cursor:pointer; color:#ff4d4d;" onclick="removeQuestion(${index})">&times;</span>
+                </div>`;
+            });
+            document.getElementById('cq-count').innerText = `Eklenen Soru: ${customQuestions.length}`;
+        }
+
+        function removeQuestion(index) {
+            customQuestions.splice(index, 1);
+            updateQuestionsList();
+        }
+
+        function startCustomRoom() {
+            if(customQuestions.length === 0){
+                alert("En az 1 soru eklemelisiniz!");
+                return;
+            }
+            createRoomRequest(0, customQuestions);
+        }
+
+        function createRoomRequest(categoryId, customQs) {
+            fetch(`/Game/CreateRoom?categoryId=${categoryId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(customQs || [])
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.redirectUrl) {
+                    window.location.href = data.redirectUrl;
+                } else {
+                    alert("Oda oluşturulamadı.");
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Bir hata oluştu.");
+            });
+        }
+    </script>
+}

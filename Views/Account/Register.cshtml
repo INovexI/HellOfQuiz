@@ -1,0 +1,41 @@
+@model HellOfQuiz.Models.ViewModels.RegisterViewModel
+@{ ViewData["Title"] = "Kayıt Ol"; }
+
+<div class="auth-container">
+    <div class="auth-card fade-up">
+        <div style="text-align:center;margin-bottom:1.5rem;font-size:2.5rem">🎮</div>
+        <h1 class="auth-title">Hesap Oluştur</h1>
+        <p class="auth-sub">Ücretsiz kaydol, quiz dünyasına katıl!</p>
+
+        <form asp-action="Register" asp-controller="Account" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" style="color:var(--error);background:rgba(231,76,60,0.1);padding:0.75rem;border-radius:8px;margin-bottom:1rem;font-size:0.9rem"></div>
+
+            <div class="form-group">
+                <label class="form-label">Kullanıcı Adı</label>
+                <input asp-for="Username" class="form-control" placeholder="süperoyuncu42" />
+                <span asp-validation-for="Username" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label class="form-label">E-posta</label>
+                <input asp-for="Email" class="form-control" placeholder="ornek@mail.com" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Şifre</label>
+                <input asp-for="Password" type="password" class="form-control" placeholder="En az 6 karakter" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Şifre Tekrar</label>
+                <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="••••••••" />
+                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:0.5rem">✨ Kayıt Ol</button>
+        </form>
+
+        <div class="auth-divider">Zaten hesabın var mı? <a href="/Account/Login" class="auth-link">Giriş Yap</a></div>
+    </div>
+</div>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

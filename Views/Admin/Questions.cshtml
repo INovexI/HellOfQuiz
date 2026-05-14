@@ -1,0 +1,58 @@
+@model List<HellOfQuiz.Models.Question>
+@{ ViewData["Title"] = "Soru Yönetimi"; }
+
+<div class="admin-container">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
+        <div>
+            <h1 class="page-title">❓ Soru Yönetimi</h1>
+            <p style="color:var(--text-muted)">Toplam @Model.Count soru</p>
+        </div>
+        <a href="/Admin/CreateQuestion" class="btn btn-primary">➕ Yeni Soru Ekle</a>
+    </div>
+
+    <!-- Kategori Filtresi -->
+    <div class="filter-tabs" style="margin-bottom:1.5rem">
+        <a href="/Admin/Questions" class="filter-tab @(ViewBag.SelectedCategoryId == null ? "active" : "")">Tümü</a>
+        @foreach (var cat in (List<HellOfQuiz.Models.Category>)ViewBag.Categories)
+        {
+            <a href="/Admin/Questions?categoryId=@cat.Id" class="filter-tab @(ViewBag.SelectedCategoryId == cat.Id ? "active" : "")">@cat.Icon @cat.Name</a>
+        }
+    </div>
+
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Soru</th>
+                    <th>Kategori</th>
+                    <th>Zorluk</th>
+                    <th>İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var q in Model)
+                {
+                    var diffClass = q.Difficulty == 1 ? "diff-1" : q.Difficulty == 2 ? "diff-2" : "diff-3";
+                    var diffText = q.Difficulty == 1 ? "Kolay" : q.Difficulty == 2 ? "Orta" : "Zor";
+                    <tr>
+                        <td style="color:var(--text-muted);font-size:0.85rem">@q.Id</td>
+                        <td style="max-width:350px;font-size:0.9rem">@q.Text</td>
+                        <td>@q.Category?.Icon @q.Category?.Name</td>
+                        <td><span class="difficulty-badge @diffClass">@diffText</span></td>
+                        <td>
+                            <div style="display:flex;gap:0.5rem">
+                                <a href="/Admin/EditQuestion/@q.Id" class="btn-edit">✏️ Düzenle</a>
+                                <form asp-action="DeleteQuestion" asp-controller="Admin" method="post" style="display:inline" onsubmit="return confirm('Bu soruyu silmek istediğine emin misin?')">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@q.Id" />
+                                    <button type="submit" class="btn-danger">🗑️ Sil</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

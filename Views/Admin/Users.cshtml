@@ -1,0 +1,47 @@
+@model List<HellOfQuiz.Models.User>
+@{ ViewData["Title"] = "Kullanıcı Yönetimi"; }
+
+<div class="admin-container">
+    <div style="margin-bottom:1.5rem">
+        <h1 class="page-title">👥 Kullanıcı Yönetimi</h1>
+        <p style="color:var(--text-muted)">Toplam @Model.Count kayıtlı kullanıcı</p>
+    </div>
+
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Kullanıcı Adı</th>
+                    <th>E-Posta</th>
+                    <th>Yetki</th>
+                    <th>Kayıt Tarihi</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var u in Model)
+                {
+                    <tr>
+                        <td style="color:var(--text-muted);font-size:0.85rem">@u.Id</td>
+                        <td style="font-weight:600">
+                            @if (u.IsAdmin) { <span title="Admin">🛡️</span> }
+                            @u.Username
+                        </td>
+                        <td style="color:var(--text-muted)">@u.Email</td>
+                        <td>
+                            @if (u.IsAdmin)
+                            {
+                                <span style="background:rgba(108,99,255,0.15);color:var(--primary);padding:0.2rem 0.6rem;border-radius:20px;font-size:0.8rem;font-weight:600">Admin</span>
+                            }
+                            else
+                            {
+                                <span style="background:var(--bg-card2);color:var(--text-muted);padding:0.2rem 0.6rem;border-radius:20px;font-size:0.8rem">Oyuncu</span>
+                            }
+                        </td>
+                        <td style="color:var(--text-muted);font-size:0.85rem">@u.CreatedAt.ToLocalTime().ToString("dd MMM yyyy")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

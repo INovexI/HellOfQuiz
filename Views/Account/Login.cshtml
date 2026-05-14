@@ -1,0 +1,36 @@
+@model HellOfQuiz.Models.ViewModels.LoginViewModel
+@{ ViewData["Title"] = "Giriş Yap"; Layout = "~/Views/Shared/_Layout.cshtml"; }
+
+<div class="auth-container">
+    <div class="auth-card fade-up">
+        <div style="text-align:center;margin-bottom:1.5rem;font-size:2.5rem">⚡</div>
+        <h1 class="auth-title">Tekrar Hoş Geldin!</h1>
+        <p class="auth-sub">Hesabına giriş yap ve yarışmaya devam et.</p>
+
+        <form asp-action="Login" asp-controller="Account" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" style="color:var(--error);background:rgba(231,76,60,0.1);padding:0.75rem;border-radius:8px;margin-bottom:1rem;font-size:0.9rem"></div>
+
+            <div class="form-group">
+                <label class="form-label">E-posta</label>
+                <input asp-for="Email" class="form-control" placeholder="ornek@mail.com" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Şifre</label>
+                <input asp-for="Password" type="password" class="form-control" placeholder="••••••••" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:0.5rem">🚀 Giriş Yap</button>
+        </form>
+
+        <div class="auth-divider">Hesabın yok mu? <a href="/Account/Register" class="auth-link">Kayıt Ol</a></div>
+        <div style="text-align:center;font-size:0.85rem;color:var(--text-muted)">
+            Admin: admin@HellOfQuiz.com / admin123
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

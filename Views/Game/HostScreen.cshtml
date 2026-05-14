@@ -1,0 +1,135 @@
+@{
+    ViewData["Title"] = "Oyun Ekranı";
+    var pin = ViewBag.Pin as string;
+}
+
+<div class="container mt-4">
+    <!-- Üst Bar: PIN ve Zamanlayıcı -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="badge bg-dark p-3 fs-4">PIN: @pin</div>
+        <div class="badge bg-danger p-3 fs-2" id="timer">--</div>
+    </div>
+
+    <!-- Soru Kartı -->
+    <div class="card glass-card p-5 mb-4 text-center">
+        <h2 id="question-text" class="mb-0">Soru bekleniyor...</h2>
+    </div>
+
+    <!-- Şıklar -->
+    <div class="row g-4" id="options-container" style="display:none;">
+        <div class="col-md-6">
+            <div id="card-A" class="card p-4 h-100 d-flex justify-content-center align-items-center text-white" style="background-color: #E21B3C; font-size: 1.5rem; min-height: 150px; border-radius: 15px;">
+                <div class="d-flex w-100 align-items-center">
+                    <span class="fs-1 me-3">🔺</span>
+                    <span id="text-A">Seçenek A</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div id="card-B" class="card p-4 h-100 d-flex justify-content-center align-items-center text-white" style="background-color: #1368CE; font-size: 1.5rem; min-height: 150px; border-radius: 15px;">
+                <div class="d-flex w-100 align-items-center">
+                    <span class="fs-1 me-3">♦️</span>
+                    <span id="text-B">Seçenek B</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div id="card-C" class="card p-4 h-100 d-flex justify-content-center align-items-center text-white" style="background-color: #D89E00; font-size: 1.5rem; min-height: 150px; border-radius: 15px;">
+                <div class="d-flex w-100 align-items-center">
+                    <span class="fs-1 me-3">⏺️</span>
+                    <span id="text-C">Seçenek C</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div id="card-D" class="card p-4 h-100 d-flex justify-content-center align-items-center text-white" style="background-color: #26890C; font-size: 1.5rem; min-height: 150px; border-radius: 15px;">
+                <div class="d-flex w-100 align-items-center">
+                    <span class="fs-1 me-3">🟩</span>
+                    <span id="text-D">Seçenek D</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sonraki Soru Butonu -->
+    <div class="text-end mt-4">
+        <button id="btn-next" class="btn btn-light btn-lg" style="display:none;" onclick="requestNextQuestion()">Sıradaki Soru ➡️</button>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const pin = "@pin";
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/quizHub")
+            .build();
+
+        let timerInterval;
+        let timeLeft = 0;
+
+        connection.on("ShowHostQuestion", function (question, timeLimit) {
+            document.getElementById("options-container").style.display = "flex";
+            document.getElementById("btn-next").style.display = "none";
+            
+            // Kart renklerini sıfırla (eğer karartılmışsa)
+            ['A','B','C','D'].forEach(opt => document.getElementById('card-' + opt).style.opacity = '1');
+
+            document.getElementById("question-text").innerText = question.text;
+            document.getElementById("text-A").innerText = question.optionA;
+            document.getElementById("text-B").innerText = question.optionB;
+            document.getElementById("text-C").innerText = question.optionC;
+            document.getElementById("text-D").innerText = question.optionD;
+
+            timeLeft = timeLimit;
+            document.getElementById("timer").innerText = timeLeft;
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById("timer").innerText = timeLeft;
+                if(timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    // Süre bitti, doğru cevabı göster
+                    connection.invoke("ShowAnswer", pin);
+                }
+            }, 1000);
+        });
+
+        connection.on("ShowHostAnswerResult", function (correctAnswer, topPlayers) {
+            clearInterval(timerInterval);
+            document.getElementById("timer").innerText = "Süre Bitti!";
+            
+            // Yanlış şıkları karart
+            ['A','B','C','D'].forEach(opt => {
+                if(opt !== correctAnswer) {
+                    document.getElementById('card-' + opt).style.opacity = '0.3';
+                }
+            });
+
+            document.getElementById("btn-next").style.display = "inline-block";
+        });
+
+        connection.on("ShowPodium", function (topPlayers) {
+            window.location.href = "/Game/Podium?pin=" + pin;
+        });
+
+        connection.on("GameFinished", function () {
+            // Podium sayfasına yönlendirecek, sunucu ShowPodium çağırmış olmalı.
+        });
+
+        connection.on("PlayerAnswered", function () {
+            // İsterseniz burada "1 kişi cevapladı" gibi bir animasyon yapabilirsiniz.
+        });
+
+        connection.start().then(function () {
+            connection.invoke("RegisterHost", pin).then(() => {
+                requestNextQuestion();
+            });
+        }).catch(function (err) {
+            return console.error(err.toString());
+        });
+
+        function requestNextQuestion() {
+            connection.invoke("NextQuestion", pin).catch(err => console.error(err));
+        }
+    </script>
+}

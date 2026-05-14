@@ -1,0 +1,80 @@
+@model List<HellOfQuiz.Models.Player>
+@{
+    ViewData["Title"] = "Podyum";
+}
+
+<style>
+    .podium-container {
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        height: 50vh;
+        gap: 20px;
+        margin-top: 50px;
+    }
+    .podium-step {
+        width: 150px;
+        background: #6C63FF;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        color: white;
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+        box-shadow: 0 -5px 20px rgba(108, 99, 255, 0.5);
+    }
+    .podium-1 { height: 100%; background: #FFD700; box-shadow: 0 -5px 30px rgba(255, 215, 0, 0.6); color: black; }
+    .podium-2 { height: 75%; background: #C0C0C0; }
+    .podium-3 { height: 50%; background: #CD7F32; }
+    
+    .player-name {
+        font-weight: bold;
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+        margin-top: -40px;
+        text-shadow: 1px 1px 5px rgba(0,0,0,0.5);
+    }
+    .player-score {
+        font-size: 1.2rem;
+        margin-top: 20px;
+        font-weight: bold;
+    }
+</style>
+
+<div class="container text-center mt-5">
+    <h1 class="display-3 fw-bold text-primary mb-5">🏆 PODYUM 🏆</h1>
+
+    <div class="podium-container">
+        @if (Model.Count > 1)
+        {
+            <div class="podium-step podium-2">
+                <div class="player-name text-white">@Model[1].Name</div>
+                <div class="fs-1 mt-2">🥈</div>
+                <div class="player-score">@Model[1].Score Puan</div>
+            </div>
+        }
+
+        @if (Model.Count > 0)
+        {
+            <div class="podium-step podium-1">
+                <div class="player-name text-white">@Model[0].Name</div>
+                <div class="fs-1 mt-2">🥇</div>
+                <div class="player-score">@Model[0].Score Puan</div>
+            </div>
+        }
+
+        @if (Model.Count > 2)
+        {
+            <div class="podium-step podium-3">
+                <div class="player-name text-white">@Model[2].Name</div>
+                <div class="fs-1 mt-2">🥉</div>
+                <div class="player-score">@Model[2].Score Puan</div>
+            </div>
+        }
+    </div>
+    
+    <div class="mt-5">
+        <a href="/" class="btn btn-outline-light btn-lg">Ana Sayfaya Dön</a>
+    </div>
+</div>

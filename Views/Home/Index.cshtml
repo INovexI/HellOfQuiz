@@ -1,0 +1,73 @@
+@{
+    ViewData["Title"] = "Ana Sayfa";
+}
+
+<div class="hero-section text-center">
+    <div class="hero-content">
+        <h1 class="hero-title">Hell<span class="text-primary">OfQuiz</span>'e Hoş Geldin!</h1>
+        <p class="hero-subtitle">Arkadaşlarınla odalar kur, soruları cevapla ve podyuma çık!</p>
+
+        <div class="kahoot-join-box card glass-card">
+            <form action="/Game/PlayerScreen" method="get">
+                <input type="text" name="pin" class="form-control pin-input mb-3" placeholder="Oyun PIN'i" required autocomplete="off" />
+                <input type="text" name="name" class="form-control name-input mb-3" placeholder="Takma Adın" required autocomplete="off" maxlength="20" />
+                <button type="submit" class="btn btn-primary btn-join w-100">Oyuna Katıl</button>
+            </form>
+        </div>
+        
+        <div class="mt-4">
+            <span class="text-muted">veya</span>
+            <br />
+            <a href="/Game/Create" class="btn btn-outline-light mt-2">Kendi Odanı Kur (Host)</a>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .hero-section {
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .kahoot-join-box {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .pin-input, .name-input {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            padding: 15px;
+            background: #fff;
+            color: #000;
+            border: none;
+            border-radius: 8px;
+        }
+        .pin-input::placeholder, .name-input::placeholder {
+            color: #888;
+            font-weight: normal;
+        }
+        .btn-join {
+            font-size: 1.5rem;
+            font-weight: bold;
+            padding: 15px;
+            border-radius: 8px;
+            background: #2ECC71;
+            border: none;
+            color: white;
+            transition: transform 0.2s;
+        }
+        .btn-join:hover {
+            transform: scale(1.05);
+            background: #27ae60;
+        }
+    </style>
+}

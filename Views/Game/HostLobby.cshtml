@@ -1,0 +1,72 @@
+@{
+    ViewData["Title"] = "Oda Lobisi";
+    var pin = ViewBag.Pin as string;
+}
+
+<div class="container mt-5 text-center">
+    <div class="card glass-card p-5 mx-auto" style="max-width: 600px;">
+        <h2 class="text-primary mb-4">Oyuncular Bekleniyor...</h2>
+        <div class="mb-4">
+            <span class="text-muted d-block" style="font-size: 1.2rem;">Odaya katılmak için PIN:</span>
+            <span class="fw-bold text-white d-block" style="font-size: 4rem; letter-spacing: 5px;">@pin</span>
+        </div>
+        
+        <div class="card bg-dark text-light p-3 mb-4">
+            <h5 class="mb-3">Katılan Oyuncular (<span id="player-count">0</span>)</h5>
+            <div id="players-list" class="d-flex flex-wrap justify-content-center gap-2">
+                <!-- Oyuncular buraya eklenecek -->
+            </div>
+        </div>
+
+        <button id="btn-start" class="btn btn-success btn-lg w-100" style="display:none;" onclick="startGame()">Oyunu Başlat</button>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const pin = "@pin";
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/quizHub")
+            .build();
+
+        let playerCount = 0;
+
+        connection.on("PlayerJoined", function (playerName) {
+            playerCount++;
+            document.getElementById("player-count").innerText = playerCount;
+            
+            const playerBadge = document.createElement("span");
+            playerBadge.className = "badge bg-info p-2 fs-6";
+            playerBadge.innerText = playerName;
+            playerBadge.id = "player-" + playerName;
+            document.getElementById("players-list").appendChild(playerBadge);
+
+            if(playerCount >= 1) {
+                document.getElementById("btn-start").style.display = "block";
+            }
+        });
+
+        connection.on("PlayerLeft", function (playerName) {
+            playerCount--;
+            document.getElementById("player-count").innerText = playerCount;
+            const badge = document.getElementById("player-" + playerName);
+            if(badge) badge.remove();
+            
+            if(playerCount < 1) {
+                document.getElementById("btn-start").style.display = "none";
+            }
+        });
+
+        connection.start().then(function () {
+            // Host olarak kaydol
+            connection.invoke("RegisterHost", pin).catch(err => console.error(err));
+        }).catch(function (err) {
+            return console.error(err.toString());
+        });
+
+        function startGame() {
+            // Soruyu başlatmak için HostScreen sayfasına geç. Orada NextQuestion çağrılacak.
+            window.location.href = "/Game/HostScreen?pin=" + pin;
+        }
+    </script>
+}
